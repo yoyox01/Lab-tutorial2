@@ -47,36 +47,58 @@ result.fillna(0, inplace=True)
 
 result.reset_index(inplace=True, drop=True)                                 # reindex
 
-result.to_csv("105Jongli_and_Taoyuan.csv", encoding="big5")                 # the final merged table of Jongli and Taoyuan
+result.to_csv("105Jongli_and_Taoyuan.csv", encoding="big5")                 # output the final merge of Jongli and Taoyuan
 
 
+#print(result.dtypes)
+for col in result.iloc[:, 3:]:                                              # convert object types to float
+    result[col] = pd.to_numeric(result[col])
+#print(result.dtypes)
 
 ''' (1) '''
-result['SO2'] = result.SO2.astype(float)                                    # change the type to float
-#print(result.dtypes)
 ans1 = result['SO2'].max()                                                  # find max
-print("\n(1) The maximum value of SO2 is : ", ans1)
+print("\n(1) The maximum value of SO2 is : \n", ans1)
 
 
 
 ''' (2) '''
-result['CO'] = result.CO.astype(float)                                      # change the type to float
 ans2 = result.loc[result.location=='中壢','CO'].mean()                      # calculate the average
-print("\n(2) The average value of CO in Jongli is :", ans2)
+print("\n(2) The average value of CO in Jongli is : \n", ans2)
 
 
 
 ''' (3) '''
-result.rename(columns={'PM2.5':'PM25'}, inplace=True)                       # change the type to float
-result['PM25'] = result.PM25.astype(float)
-result.rename(columns={'PM25':'PM2.5'}, inplace=True)
-
 ans3_1 = result['date'][result['PM2.5'].idxmax()]                           # date of maximum PM2.5
 ans3_2 = result['location'][result['PM2.5'].idxmax()]                       # location of maximum PM2.5
 
-print("\n(3) The maximum value of PM2.5 is in : ", ans3_1, ",", ans3_2)
+print("\n(3) The maximum value of PM2.5 is in : \n", ans3_1, ",", ans3_2)
 
 
 
 ''' (4) '''
-print(result['date'].month)
+result['date'] = pd.to_datetime(result.date)                                # convert float type to datetime
+taoyuan_april = result[(result.date.dt.month == 4) & 
+                (result.location.str.encode('big5','strict') == u'桃園'.encode('big5','strict'))]
+ans4 = taoyuan_april.O3.mean()
+print("\n(4) The average density of O3 in Taoyuan is : \n", ans4)
+
+
+
+''' (5) '''
+#result.rename(columns={'PM2.5':'PM25'}, inplace=True)
+correlations = result.corr()                                                    # dataFrame of all correlations
+ans5 = correlations[correlations['PM2.5'] > 0.3]['PM2.5']
+print("\n(5) The correlation with PM2.5 over 0.3 in Jongli and Taoyuan is :")
+print(ans5)
+
+
+
+''' (6) '''
+NO_avg = result['NO'].mean()
+tmp = result[result['NO']<result['NO'].mean()]                                  # a dataFrame that NO vaules is smaller than averrage
+tmp = tmp.sort_values('PM10',ascending=False)                                   # PM10 sorted descendingly
+ans6 = tmp.loc[: ,['date','time','location','NO','PM10']]
+print("\n(6) List the date, time and location of the top 10 PM10 density ")
+print("that the NO density is lower than average :\n")
+print(ans6.head(10))
+print("\n (NO averrage : ", NO_avg ,")")
