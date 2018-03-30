@@ -49,11 +49,12 @@ result.reset_index(inplace=True, drop=True)                                 # re
 
 result.to_csv("105Jongli_and_Taoyuan.csv", encoding="big5")                 # output the final merge of Jongli and Taoyuan
 
-
 #print(result.dtypes)
 for col in result.iloc[:, 3:]:                                              # convert object types to float
     result[col] = pd.to_numeric(result[col])
 #print(result.dtypes)
+
+
 
 ''' (1) '''
 ans1 = result['SO2'].max()                                                  # find max
